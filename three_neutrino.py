@@ -26,10 +26,18 @@ def phi(m2, LoE):
 
 class ThreeNuOscillator:
 
-    def __init__(self):
+    def __init__(self, init_state):
         self.qreg   = QuantumRegister(2)
         self.creg   = ClassicalRegister(2)
         self.qc     = QuantumCircuit(self.qreg, self.creg)
+        if init_state=='nue':
+            pass
+        elif init_state=='numu':
+            self.qc.x(self.qreg[1])
+        elif init_state--'nutau':
+            self.qc.x(self.qreg[0])
+        else:
+            print('init_state %s not recognized. Please reinitialize' % init_state)
         self.counts = None
         
 
@@ -38,41 +46,55 @@ class ThreeNuOscillator:
     
         '''
         alpha, beta, gamma, delta, epsilon, zeta = param
-        self.qc.u(epsilon, 0, 0, qreg[0])
-        self.qc.u(zeta, 0, 0, qreg[1])
-        self.qc.cnot(qreg[0], qreg[1])
-        self.qc.u(gamma, 0, 0, qreg[0])
-        self.qc.u(delta, 0, 0, qreg[1])
-        self.qc.cnot(qreg[0], qreg[1])
-        self.qc.u(alpha, 0, 0, qreg[0])
-        self.qc.u(beta, 0, 0, qreg[1])
+        self.qc.u(beta, 0, 0, self.qreg[1])
+        self.qc.u(alpha, 0, 0, self.qreg[0])
+        self.qc.cnot(self.qreg[1], self.qreg[0])
+        self.qc.u(delta, 0, 0, self.qreg[1])
+        self.qc.u(gamma, 0, 0, self.qreg[0])
+        self.qc.cnot(self.qreg[1], self.qreg[0])
+        self.qc.u(zeta, 0, 0, self.qreg[1])
+        self.qc.u(epsilon, 0, 0, self.qreg[0])
 
-    def apply_PMNS_dagger(self, param=PMNS_dagger_param)
+    def apply_PMNS_dagger(self, param=PMNS_dagger_param):
         r'''
     
         '''
         alpha, beta, gamma, delta, epsilon, zeta = param
-        self.qc.u(epsilon, 0, 0, qreg[1])
-        self.qc.u(zeta, 0, 0, qreg[0])
-        self.qc.cnot(qreg[0], qreg[1])
-        self.qc.u(gamma, 0, 0, qreg[0])
-        self.qc.u(delta, 0, 0, qreg[1])
-        self.qc.cnot(qreg[0], qreg[1])
-        self.qc.u(alpha, 0, 0, qreg[0])
-        self.qc.u(beta, 0, 0, qreg[1])
+        self.qc.u(beta, 0, 0, self.qreg[1])
+        self.qc.u(alpha, 0, 0, self.qreg[0])
+        self.qc.cnot(self.qreg[1], self.qreg[0])
+        self.qc.u(delta, 0, 0, self.qreg[1])
+        self.qc.u(gamma, 0, 0, self.qreg[0])
+        self.qc.cnot(self.qreg[1], self.qreg[0])
+        self.qc.u(zeta, 0, 0, self.qreg[1])
+        self.qc.u(epsilon, 0, 0, self.qreg[0])
 
 
-    def propoagate(self, LoE, m12=op.deltam12, m13=op.deltam13):
+    def propoagate(self, LoE, m12=op.deltam12, m13=op.deltam3l):
         r'''
 
         '''
-        self.qc.rz(phi(m12, LoE), self.qreg[0])
-        self.qc.rz(phi(m13, LoE), self.qreg[1])
+        self.qc.rz(phi(m12, LoE), self.qreg[1])
+        self.qc.rz(phi(m13, LoE), self.qreg[0])
+
+    def measure(self):
+        self.qc.measure(self.qreg, self.creg)
 
 if __name__=='__main__':
-    loee = np.linsapce(0, 10000, 1000)
+    loee = np.linspace(0, 1200, 20)
     
     n = 10000
+    results = np.zeros((4,len(loee)))
     for i, LE in enumerate(loee):
-    tno = ThreeNuOscillator()   
-
+        tno = ThreeNuOscillator('numu')
+        tno.apply_PMNS_dagger()
+        tno.propoagate(LE)
+        tno.apply_PMNS()
+        tno.measure()
+        job = execute(tno.qc, Aer.get_backend('qasm_simulator'), shots=n)
+        counts = job.result().get_counts(tno.qc)
+        for j, (key, val) in enumerate(sorted(counts.items())):
+            if key=='11':
+                print(val)
+            results[j, i] = float(val)/n
+    np.save('three_neutrino', results)
