@@ -34,7 +34,7 @@ class ThreeNuOscillator:
             pass
         elif init_state=='numu':
             self.qc.x(self.qreg[1])
-        elif init_state--'nutau':
+        elif init_state=='nutau':
             self.qc.x(self.qreg[0])
         else:
             print('init_state %s not recognized. Please reinitialize' % init_state)
@@ -81,7 +81,7 @@ class ThreeNuOscillator:
         self.qc.measure(self.qreg, self.creg)
 
 if __name__=='__main__':
-    loee = np.linspace(0, 1200, 20)
+    loee = np.linspace(0, 1200, 21)
     
     n = 10000
     results = np.zeros((4,len(loee)))
@@ -94,7 +94,5 @@ if __name__=='__main__':
         job = execute(tno.qc, Aer.get_backend('qasm_simulator'), shots=n)
         counts = job.result().get_counts(tno.qc)
         for j, (key, val) in enumerate(sorted(counts.items())):
-            if key=='11':
-                print(val)
             results[j, i] = float(val)/n
     np.save('three_neutrino', results)

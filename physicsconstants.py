@@ -464,13 +464,13 @@ class OscParams:
             self.theta13 = np.radians(8.57)
             self.deltacp = np.radians(195)
             self.deltam12 = 7.42e-5
-            self.deltsm3l = 2.514e-3
+            self.deltam3l = 2.514e-3
         elif self.ordering=='inverted':
             self.theta12 = np.radians(33.45)
             self.theta23 = np.radians(49.3)
             self.theta13 = np.radians(8.61)
             self.deltacp = np.radians(286)
             self.deltam12 = 7.42e-5
-            self.deltsm3l = -2.497e-3
+            self.deltam3l = -2.497e-3
         else:
             print('ordering %s not recognized. Must be "normal" or "inverted."' % str(ordering))
