@@ -41,7 +41,7 @@ class ThreeNuOscillator:
         self.counts = None
         
 
-    def apply_PMNS(self, param=PMNS_param):
+    def apply_rotation(self, param):
         r'''
     
         '''
@@ -55,19 +55,33 @@ class ThreeNuOscillator:
         self.qc.u(zeta, 0, 0, self.qreg[1])
         self.qc.u(epsilon, 0, 0, self.qreg[0])
 
-    def apply_PMNS_dagger(self, param=PMNS_dagger_param):
-        r'''
-    
-        '''
-        alpha, beta, gamma, delta, epsilon, zeta = param
-        self.qc.u(beta, 0, 0, self.qreg[1])
-        self.qc.u(alpha, 0, 0, self.qreg[0])
-        self.qc.cnot(self.qreg[1], self.qreg[0])
-        self.qc.u(delta, 0, 0, self.qreg[1])
-        self.qc.u(gamma, 0, 0, self.qreg[0])
-        self.qc.cnot(self.qreg[1], self.qreg[0])
-        self.qc.u(zeta, 0, 0, self.qreg[1])
-        self.qc.u(epsilon, 0, 0, self.qreg[0])
+    #def apply_PMNS(self, param=PMNS_param):
+    #    r'''
+    #
+    #    '''
+    #    alpha, beta, gamma, delta, epsilon, zeta = param
+    #    self.qc.u(beta, 0, 0, self.qreg[1])
+    #    self.qc.u(alpha, 0, 0, self.qreg[0])
+    #    self.qc.cnot(self.qreg[1], self.qreg[0])
+    #    self.qc.u(delta, 0, 0, self.qreg[1])
+    #    self.qc.u(gamma, 0, 0, self.qreg[0])
+    #    self.qc.cnot(self.qreg[1], self.qreg[0])
+    #    self.qc.u(zeta, 0, 0, self.qreg[1])
+    #    self.qc.u(epsilon, 0, 0, self.qreg[0])
+
+    #def apply_PMNS_dagger(self, param=PMNS_dagger_param):
+    #    r'''
+    #
+    #    '''
+    #    alpha, beta, gamma, delta, epsilon, zeta = param
+    #    self.qc.u(beta, 0, 0, self.qreg[1])
+    #    self.qc.u(alpha, 0, 0, self.qreg[0])
+    #    self.qc.cnot(self.qreg[1], self.qreg[0])
+    #    self.qc.u(delta, 0, 0, self.qreg[1])
+    #    self.qc.u(gamma, 0, 0, self.qreg[0])
+    #    self.qc.cnot(self.qreg[1], self.qreg[0])
+    #    self.qc.u(zeta, 0, 0, self.qreg[1])
+    #    self.qc.u(epsilon, 0, 0, self.qreg[0])
 
 
     def propoagate(self, LoE, m12=op.deltam12, m13=op.deltam3l):
