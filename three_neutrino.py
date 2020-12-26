@@ -1,4 +1,4 @@
-from qiskit import Aer, execute, ClassicalRegister, QuantumRegister, QuantumCircuit
+from qiskit import Aer, execute, ClassicalRegister, QuantumRegister, QuantumCircuit, IBMQ
 from collections.abc import Iterable
 import numpy as np
 
@@ -33,9 +33,9 @@ class ThreeNuOscillator:
         if init_state=='nue':
             pass
         elif init_state=='numu':
-            self.qc.x(self.qreg[1])
-        elif init_state=='nutau':
             self.qc.x(self.qreg[0])
+        elif init_state=='nutau':
+            self.qc.x(self.qreg[1])
         else:
             print('init_state %s not recognized. Please reinitialize' % init_state)
         self.counts = None
@@ -46,14 +46,14 @@ class ThreeNuOscillator:
     
         '''
         alpha, beta, gamma, delta, epsilon, zeta = param
-        self.qc.u(beta, 0, 0, self.qreg[1])
-        self.qc.u(alpha, 0, 0, self.qreg[0])
-        self.qc.cnot(self.qreg[1], self.qreg[0])
-        self.qc.u(delta, 0, 0, self.qreg[1])
-        self.qc.u(gamma, 0, 0, self.qreg[0])
-        self.qc.cnot(self.qreg[1], self.qreg[0])
-        self.qc.u(zeta, 0, 0, self.qreg[1])
-        self.qc.u(epsilon, 0, 0, self.qreg[0])
+        self.qc.u(beta, 0, 0, self.qreg[0])
+        self.qc.u(alpha, 0, 0, self.qreg[1])
+        self.qc.cnot(self.qreg[0], self.qreg[1])
+        self.qc.u(delta, 0, 0, self.qreg[0])
+        self.qc.u(gamma, 0, 0, self.qreg[1])
+        self.qc.cnot(self.qreg[0], self.qreg[1])
+        self.qc.u(zeta, 0, 0, self.qreg[0])
+        self.qc.u(epsilon, 0, 0, self.qreg[1])
 
     #def apply_PMNS(self, param=PMNS_param):
     #    r'''
@@ -88,24 +88,29 @@ class ThreeNuOscillator:
         r'''
 
         '''
-        self.qc.rz(phi(m12, LoE), self.qreg[1])
-        self.qc.rz(phi(m13, LoE), self.qreg[0])
+        self.qc.rz(phi(m12, LoE), self.qreg[0])
+        self.qc.rz(phi(m13, LoE), self.qreg[1])
 
     def measure(self):
         self.qc.measure(self.qreg, self.creg)
 
 if __name__=='__main__':
+    
+    provider = IBMQ.load_account()
+    backend = provider.backends.ibmq_vigo
+
+
     loee = np.linspace(0, 1200, 21)
     
-    n = 10000
+    n = 1024
     results = np.zeros((4,len(loee)))
     for i, LE in enumerate(loee):
         tno = ThreeNuOscillator('numu')
-        tno.apply_PMNS_dagger()
+        tno.apply_rotation(PMNS_dagger_param)
         tno.propoagate(LE)
-        tno.apply_PMNS()
+        tno.apply_rotation(PMNS_param)
         tno.measure()
-        job = execute(tno.qc, Aer.get_backend('qasm_simulator'), shots=n)
+        job = execute(tno.qc, backend, shots=n)
         counts = job.result().get_counts(tno.qc)
         for j, (key, val) in enumerate(sorted(counts.items())):
             results[j, i] = float(val)/n
